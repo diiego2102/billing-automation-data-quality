@@ -32,7 +32,7 @@ def generate(seed=26,n_accounts=100):
     return rows
 
 
-def prepare(rows,max_units=Decimal('2000')):
+def prepare(rows,max_units=Decimal('2000'),eligible_accounts=None):
     """Gate draft billing on exactly one valid reading at each period boundary.
 
     This demo assumes cumulative meters with no reset/rollover. Such cases are
@@ -43,6 +43,15 @@ def prepare(rows,max_units=Decimal('2000')):
         if not row.get('account_id'):
             raise ValueError('Every record must have an account_id; no silent orphan drop.')
         grouped[row['account_id']].append(row)
+    if eligible_accounts is not None:
+        eligible=set(eligible_accounts)
+        if any(not isinstance(a,str) or not a.strip() for a in eligible):
+            raise ValueError('Eligible account IDs must be non-empty strings.')
+        unknown=set(grouped)-eligible
+        if unknown:
+            raise ValueError('Readings contain accounts outside the eligible register.')
+        for account in eligible:
+            grouped.setdefault(account,[])
     drafts=[];exceptions=[]
     for account,records in sorted(grouped.items()):
         issues=[];counts=Counter(r.get('reading_date') for r in records)
@@ -76,7 +85,7 @@ def prepare(rows,max_units=Decimal('2000')):
     summary=dict(period=PERIOD,source_records=len(rows),accounts=len(grouped),
         draft_accounts=len(drafts),held_accounts=len(exceptions),
         total_before_tax=str(sum((Decimal(d['total_before_tax']) for d in drafts),Decimal(0)).quantize(MONEY)),
-        synthetic_only=True)
+        eligible_register_used=eligible_accounts is not None)
     return drafts,exceptions,summary
 
 
@@ -89,6 +98,7 @@ def main():
     import argparse
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input',type=Path,help='CSV with account_id,reading_date,cumulative_units; same demo boundaries and rates.')
+    parser.add_argument('--registry',type=Path,help='CSV with unique account_id entries. Detects eligible accounts with no readings.')
     args=parser.parse_args()
     if args.input:
         with args.input.open(newline='',encoding='utf-8') as f:
@@ -97,7 +107,18 @@ def main():
                 raise ValueError('Input CSV is missing required columns.')
             rows=list(reader)
     else:rows=generate()
-    drafts,exceptions,summary=prepare(rows)
+    registry=None
+    if args.registry:
+        with args.registry.open(newline='',encoding='utf-8') as f:
+            reader=csv.DictReader(f)
+            if 'account_id' not in (reader.fieldnames or []):
+                raise ValueError('Registry requires account_id.')
+            registry=[r['account_id'] for r in reader]
+        if len(registry)!=len(set(registry)):
+            raise ValueError('Registry contains duplicate accounts.')
+    drafts,exceptions,summary=prepare(rows,eligible_accounts=registry)
+    summary['input_mode']='provided_csv' if args.input else 'synthetic_demo'
+    summary['synthetic_only']=not bool(args.input)
     out=ROOT/'outputs';out.mkdir(exist_ok=True)
     write_csv(out/'synthetic_input.csv',rows,['account_id','reading_date','cumulative_units'])
     write_csv(out/'billing_drafts.csv',drafts,['account_id','period','status','consumption_units','unit_rate','fixed_charge','variable_charge','total_before_tax'])

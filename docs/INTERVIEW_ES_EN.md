@@ -1,0 +1,21 @@
+# Billing Automation and Data Quality interview walkthrough
+
+### Español 60 segundos
+Este proyecto demuestra automatización con controles de calidad antes de preparar una facturación. A partir de lecturas acumuladas, el proceso verifica fechas, duplicados, valores inválidos y variaciones de consumo. Solo prepara borradores para cuentas consistentes; las demás pasan a una cola de revisión con el motivo. La demostración contiene 100 cuentas ficticias: 95 generan borrador y las cinco con errores introducidos quedan retenidas. Añadí un registro opcional de cuentas esperadas para detectar también las que no tienen ninguna lectura. El foco es que la automatización sea trazable y no acelere errores. Se inspira en problemas que conozco profesionalmente, pero el código, las cuentas y las tarifas de la demo son nuevos y ficticios.
+
+### English 60 seconds
+This project demonstrates automation with data-quality controls before billing preparation. Starting from cumulative readings, it checks dates, duplicates, invalid values and consumption changes. Only consistent accounts receive a draft calculation; the others enter a review queue with an explicit reason. The demonstration has 100 fictional accounts: 95 receive drafts and all five deliberately defective accounts are held. An optional eligible-account register also detects accounts with no readings at all. The focus is traceable automation that does not simply process errors faster. It draws on problems I understand professionally, but the demo code, accounts and rates are newly created and fictional.
+
+### Español Guion técnico de 5 minutos
+Minuto 1 — Explico la decisión: qué cuenta tiene datos suficientes para preparar un borrador. Distingo un borrador de una factura emitida y aclaro que las tarifas y el período son supuestos fijos de demostración.
+Minuto 2 — Muestro el contrato del CSV y las dos lecturas de frontera. Cada cuenta necesita exactamente una lectura válida en cada fecha. Duplicados o fechas inesperadas se retienen; no elijo arbitrariamente una lectura.
+Minuto 3 — Explico el delta de consumo y los bloqueos por valores negativos, reinicios o consumos extremos. No estimo ni corrijo automáticamente. Decimal controla el redondeo: un ejemplo independiente de 150 unidades produce 31,50 antes de impuestos con los cargos ficticios.
+Minuto 4 — Abro la cola de revisión y el resumen: 95 borradores y cinco retenidas, sin solapamiento. Con el registro de cuentas esperadas detecto cuentas totalmente ausentes; una lectura fuera del registro bloquea el proceso. Sin ese registro no afirmo cubrir toda la población.
+Minuto 5 — Ejecuto los siete controles y explico la trazabilidad del origen sintético o CSV suministrado. El alcance no incluye impuestos, tarifas legales ni emisión de facturas. Para ampliar el proyecto, parametrizaría período y reglas, añadiría reconciliación con totales de control y validaría el contrato con el responsable de negocio.
+
+### English Five minute technical walkthrough
+Minute 1 — Explain the decision: which account has sufficient data to prepare a draft. Separate draft preparation from issued invoices, and make the fixed demonstration rates and period explicit.
+Minute 2 — Show the CSV contract and two boundary readings. Each account needs exactly one valid reading at each date. Duplicate or unexpected dates are held rather than resolved by arbitrarily choosing a record.
+Minute 3 — Explain consumption deltas and holds for negative values, resets or extreme usage. The process neither estimates nor silently corrects data. Decimal controls rounding: an independent 150-unit example gives 31.50 before tax using the fictional charges.
+Minute 4 — Open the review queue and summary: 95 drafts and five holds with no overlap. The optional eligible register detects entirely absent accounts; readings outside it block processing. Without that register I do not claim population completeness.
+Minute 5 — Run the seven checks and explain synthetic versus provided-CSV provenance. Scope excludes taxes, jurisdiction-specific tariffs and issued invoices. Further work would parameterise the period and rules, add control-total reconciliation and validate the contract with the business owner.

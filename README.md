@@ -64,3 +64,11 @@ cd billing-automation-data-quality
 ```
 
 Follow the run commands above from this folder.
+
+## Population completeness
+
+Optional: `python billing.py --input readings.csv --registry eligible_accounts.csv`. The registry has one unique `account_id` per eligible account. Accounts with no readings are held; readings outside the register block the run. Input provenance is recorded as `synthetic_demo` or `provided_csv`.
+
+[Business case and verified fixture results](docs/CASE_STUDY.md). Seven automated checks cover the supported calculation and review path.
+
+[Business case](docs/CASE_STUDY.md) · [Interview walkthrough ES / EN](docs/INTERVIEW_ES_EN.md)

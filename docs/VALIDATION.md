@@ -8,3 +8,7 @@ Executed on 1 October 2026 with Python's standard library:
 - Non-finite readings, unexpected dates and orphan identifiers are handled explicitly.
 
 This prepares draft calculations only. Rates, thresholds, account identifiers and readings are fictitious. No invoices are issued. No historical processing-time improvement, tax handling, legal compliance or production readiness is asserted.
+
+## Portfolio v0.2.0
+
+Seven tests pass. New independent fixtures verify that an eligible account without any readings is held and an account outside the register blocks processing. CLI summary distinguishes provided CSV from synthetic generation. No jurisdiction-specific tariff or tax validation is claimed.
